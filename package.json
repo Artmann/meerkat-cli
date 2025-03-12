@@ -2,23 +2,27 @@
   "name": "meerkat-cli",
   "author": "Christoffer Artmann <Artgaard@gmail.com>",
   "module": "src/index.ts",
-  "type": "module",
-  "private": true,
-  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "bun-types": "latest",
+    "chalk": "^5.4.1",
+    "esbuild": "^0.25.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
   "bin": {
     "meerkat": "./dist/cli.cjs"
   },
+  "license": "MIT",
+  "private": true,
   "scripts": {
     "build": "bun run build.js",
     "format": "bun run prettier --write .",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "^22.13.10",
-    "bun-types": "latest",
-    "esbuild": "^0.25.1",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.2"
+  "type": "module",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "node-html-parser": "^7.0.1"
   }
 }

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "bun run build.js",
+    "format": "bun run prettier --write .",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {},
@@ -17,6 +18,7 @@
     "@types/node": "^22.13.10",
     "bun-types": "latest",
     "esbuild": "^0.25.1",
+    "prettier": "^3.5.3",
     "typescript": "^5.8.2"
   }
 }

@@ -1,7 +1,7 @@
 import { google } from '@ai-sdk/google'
 import { generateObject } from 'ai'
 import { z } from 'zod'
-import { example } from './examples'
+import { examples } from './examples'
 
 const suggestionSchema = z.object({
   explanation: z.string(),
@@ -29,19 +29,22 @@ export async function generateSuggestions(
 
   const model = google('gemini-2.0-flash')
 
+  const exampleBlocks = examples.map(
+    (example) => `<example>${example}</example>`
+  )
+
   const systemPrompt = `Your task is to generate suggestions of internal links to other pages on the
     website. You will be given a list of URLs and the content of the page you are generating
     suggestions for. The suggestions should be based on the content of the page and the
     URLs you have been given.
 
     You can also suggest linking to reputable sources or articles that are not on the website.
-
     You can also suggest creating new pages if you think there is a gap in the content.
-
     Prioritize suggesting internal links to existing pages.
 
-    Don't make multiple suggestion with the same anchor text.
-    Don't make multiple suggestion for the same page.
+    - Don't make multiple suggestion with the same anchor text.
+    - Don't make multiple suggestion for the same page.
+    - Don't suggest linking to pages that are already linked in the content.
 
     Internal links help search engines find and index all site pages. They show how your pages relate
     to each other, which tells Google which pages are most important. This distribution of link
@@ -59,9 +62,9 @@ export async function generateSuggestions(
     More importantly, ensure each link genuinely enhances the reader's journey by connecting to truly
     relevant content. Links should feel like helpful suggestions, not forced insertions.
 
-    <example>
-      ${JSON.stringify(example)}
-    </example>
+    <examples>
+      ${JSON.stringify(exampleBlocks.join('\n'))}
+    </examples>
   `
 
   const prompt = `Generate 10 to 20 suggestions for:

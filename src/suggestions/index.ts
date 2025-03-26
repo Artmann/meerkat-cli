@@ -40,6 +40,9 @@ export async function generateSuggestions(
 
     Prioritize suggesting internal links to existing pages.
 
+    Don't make multiple suggestion with the same anchor text.
+    Don't make multiple suggestion for the same page.
+
     Internal links help search engines find and index all site pages. They show how your pages relate
     to each other, which tells Google which pages are most important. This distribution of link
     equity can boost the visibility of less prominent pages.
@@ -55,7 +58,6 @@ export async function generateSuggestions(
     While there's no perfect number, aim for around 3-7 internal links per 1000 words of content.
     More importantly, ensure each link genuinely enhances the reader's journey by connecting to truly
     relevant content. Links should feel like helpful suggestions, not forced insertions.
-
 
     <example>
       ${JSON.stringify(example)}

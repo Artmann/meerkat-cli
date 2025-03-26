@@ -1,26 +1,28 @@
 {
   "name": "meerkat-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool that suggests internal links that you can add to your website",
   "author": "Christoffer Artmann <Artgaard@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/Artmann/meerkat-cli",
+  "keywords": [
+    "typescript",
+    "seo",
+    "internal-links",
+    "blazing-fast",
+    "ai"
+  ],
+  "private": false,
+  "type": "module",
   "module": "src/index.ts",
-  "devDependencies": {
-    "@types/node": "^22.13.10",
-    "bun-types": "latest",
-    "chalk": "^5.4.1",
-    "esbuild": "^0.25.1",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.2"
-  },
   "bin": {
     "meerkat": "./dist/cli.cjs"
   },
-  "license": "MIT",
-  "private": true,
   "scripts": {
     "build": "bun run build.js",
     "format": "bun run prettier --write .",
     "prepublishOnly": "bun run build"
   },
-  "type": "module",
   "dependencies": {
     "@ai-sdk/google": "^1.2.3",
     "ai": "^4.2.5",
@@ -29,5 +31,13 @@
     "node-html-parser": "^7.0.1",
     "ora": "^8.2.0",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "bun-types": "latest",
+    "chalk": "^5.4.1",
+    "esbuild": "^0.25.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
   }
 }

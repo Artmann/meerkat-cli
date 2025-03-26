@@ -1,4 +1,6 @@
-# meerkat-cli
+# Meerkat CLI
+
+Meerkat is a CLI tool that suggests internal links that you can add to your website.
 
 To install dependencies:
 
@@ -11,6 +13,3 @@ To run:
 ```bash
 bun run src/index.ts
 ```
-
-This project was created using `bun init` in bun v1.0.2. [Bun](https://bun.sh)
-is a fast all-in-one JavaScript runtime.

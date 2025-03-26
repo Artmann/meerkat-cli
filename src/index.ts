@@ -1,45 +1,153 @@
 import chalk from 'chalk'
-import fetch from 'node-fetch'
-import { parse } from 'node-html-parser'
+import { configDotenv } from 'dotenv'
+import ora from 'ora'
 import { argv } from 'process'
 
+import { fetchUrlsFromSitemap } from './sitemap'
+import { fetchWebsiteContent } from './scraper'
+import { generateSuggestions, Suggestion } from './suggestions'
+
 async function main() {
-  const url = argv[2]
+  configDotenv()
 
-  console.log(chalk.blue(`Fetching the sitemap from ${url}`))
-
-  const urls = await fetchUrlsFromSitemap(url)
-
-  console.log(chalk.blue(`Found ${urls.length} urls`))
-}
-
-async function fetchUrlsFromSitemap(url: string): Promise<string[]> {
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch sitemap: ${response.status} - ${response.statusText} `
+  if (!process.env['GOOGLE_GENERATIVE_AI_API_KEY']) {
+    console.log(
+      chalk.red(
+        'Please set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.'
+      )
     )
+
+    process.exit(1)
   }
 
-  const xml = await response.text()
+  const sitemapUrl = argv[2]
+  const pageUrl = argv[3]
 
-  const doc = parse(xml)
+  console.log(chalk.blue())
 
-  const urlElements = doc.querySelectorAll('url')
+  const urls = await runTask(
+    `Fetching the sitemap from ${sitemapUrl}.`,
+    async ({ succeed }) => {
+      const urls = await fetchUrlsFromSitemap(sitemapUrl)
 
-  const blocks = urlElements
-    .map((element) => {
-      const url = element.querySelector('loc')?.textContent
-      const priority = element.querySelector('priority')?.textContent ?? '0.0'
+      succeed(`Found ${chalk.bold(urls.length)} urls.`)
 
-      return { url, priority }
-    })
-    .filter((url) => url.url) as { url: string; priority: string }[]
+      return urls
+    }
+  )
 
-  return blocks
-    .sort((a, b) => parseFloat(b.priority) - parseFloat(a.priority))
-    .map((block) => block.url)
+  const pageContent = await runTask(
+    `Fetching the content from ${pageUrl}.`,
+    async ({ succeed }) => {
+      const content = await fetchWebsiteContent(pageUrl)
+
+      succeed(
+        `Found website content containing ${chalk.bold(content.length)} characters.`
+      )
+
+      return content
+    }
+  )
+
+  const suggestions = await runTask(
+    'Generating suggestions',
+    async ({ succeed }) => {
+      const suggestions = await generateSuggestions(urls, pageContent)
+
+      succeed(`Generated ${chalk.bold(suggestions.length)} suggestions.`)
+
+      return suggestions
+    }
+  )
+
+  console.log('')
+
+  const existingPageSuggestions = suggestions.filter(
+    (suggestion) => !suggestion.isExternal && !suggestion.isNewPage
+  )
+  const newPageSuggestions = suggestions.filter(
+    (suggestion) => suggestion.isNewPage
+  )
+  const externalPageSuggestions = suggestions.filter(
+    (suggestion) => suggestion.isExternal
+  )
+
+  if (existingPageSuggestions.length > 0) {
+    console.log(chalk.blue(chalk.bold('\nExisting pages\n')))
+
+    for (const suggestion of existingPageSuggestions) {
+      printSuggestion(suggestion)
+    }
+  }
+
+  if (externalPageSuggestions.length > 0) {
+    console.log(chalk.blue(chalk.bold('\nExternal pages\n')))
+
+    for (const suggestion of externalPageSuggestions) {
+      printSuggestion(suggestion)
+    }
+  }
+
+  if (newPageSuggestions.length > 0) {
+    console.log(chalk.blue(chalk.bold('\nNew pages\n')))
+
+    for (const suggestion of newPageSuggestions) {
+      printSuggestion(suggestion)
+    }
+  }
+
+  if (suggestions.length === 0) {
+    console.log(chalk.blue('\nWe were not able to generate any suggestions.\n'))
+  }
+
+  process.exit(0)
+}
+
+function printSuggestion(suggestion: Suggestion): void {
+  console.log(`"${suggestion.text}"`)
+  console.log(suggestion.targetUrl)
+
+  console.log(chalk.dim(suggestion.section))
+  console.log(chalk.dim(suggestion.explanation))
+  console.log('---------------------------------')
+}
+
+type FailFunction = (text: string) => void
+type SucceedFunction = (text: string) => void
+type TaskProps = {
+  fail: FailFunction
+  succeed: SucceedFunction
+}
+
+async function runTask<T>(
+  description: string,
+  fn: (props: TaskProps) => Promise<T>
+): Promise<T> {
+  const spinner = ora(chalk.blue(description)).start()
+
+  let didFail = false
+  let didSucceed = false
+
+  const props: TaskProps = {
+    fail: (text: string) => {
+      spinner.fail(chalk.red(text))
+
+      didFail = true
+    },
+    succeed: (text: string) => {
+      spinner.succeed(chalk.blue(text))
+
+      didSucceed = true
+    }
+  }
+
+  const result = await fn(props)
+
+  if (!didFail && !didSucceed) {
+    spinner.succeed()
+  }
+
+  return result
 }
 
 main().catch((error: any) => {

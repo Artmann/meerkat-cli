@@ -16,7 +16,7 @@
   "type": "module",
   "module": "src/index.ts",
   "bin": {
-    "meerkat": "./dist/cli.cjs"
+    "meerkat-cli": "./dist/cli.cjs"
   },
   "scripts": {
     "build": "bun run build.js",
